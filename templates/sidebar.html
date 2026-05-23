@@ -1,0 +1,79 @@
+{% set role = current_user.role %}
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+            <i class="fas fa-qrcode"></i>
+            <span>QR Attend</span>
+        </div>
+        <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+    </div>
+    <div class="sidebar-user">
+        <div class="user-avatar"><i class="fas fa-user-circle"></i></div>
+        <div class="user-info">
+            <span class="user-name">{{ current_user.name }}</span>
+            <span class="user-role badge-{{ role }}">{{ role | capitalize }}</span>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        {% if role == 'admin' %}
+        <a href="{{ url_for('admin.dashboard') }}" class="nav-item {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+            <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
+        </a>
+        <a href="{{ url_for('admin.teachers') }}" class="nav-item {% if 'teacher' in request.endpoint %}active{% endif %}">
+            <i class="fas fa-chalkboard-teacher"></i><span>Teachers</span>
+        </a>
+        <a href="{{ url_for('admin.students') }}" class="nav-item {% if request.endpoint == 'admin.students' %}active{% endif %}">
+            <i class="fas fa-user-graduate"></i><span>Students</span>
+        </a>
+        <a href="{{ url_for('admin.subjects') }}" class="nav-item {% if request.endpoint == 'admin.subjects' %}active{% endif %}">
+            <i class="fas fa-book"></i><span>Subjects</span>
+        </a>
+        <a href="{{ url_for('admin.analytics') }}" class="nav-item {% if request.endpoint == 'admin.analytics' %}active{% endif %}">
+            <i class="fas fa-chart-bar"></i><span>Analytics</span>
+        </a>
+        {% elif role == 'teacher' %}
+        <a href="{{ url_for('teacher.dashboard') }}" class="nav-item {% if request.endpoint == 'teacher.dashboard' %}active{% endif %}">
+            <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
+        </a>
+        <a href="{{ url_for('teacher.students') }}" class="nav-item {% if 'student' in request.endpoint and request.blueprint == 'teacher' %}active{% endif %}">
+            <i class="fas fa-user-graduate"></i><span>Students</span>
+        </a>
+        <a href="{{ url_for('teacher.subjects') }}" class="nav-item {% if 'subject' in request.endpoint %}active{% endif %}">
+            <i class="fas fa-book"></i><span>Subjects</span>
+        </a>
+        <a href="{{ url_for('teacher.attendance') }}" class="nav-item {% if request.endpoint == 'teacher.attendance' %}active{% endif %}">
+            <i class="fas fa-clipboard-list"></i><span>Attendance</span>
+        </a>
+        <a href="{{ url_for('teacher.qr_page') }}" class="nav-item {% if 'qr' in request.endpoint %}active{% endif %}">
+            <i class="fas fa-qrcode"></i><span>QR Sessions</span>
+        </a>
+        <a href="{{ url_for('teacher.reports') }}" class="nav-item {% if request.endpoint == 'teacher.reports' %}active{% endif %}">
+            <i class="fas fa-file-alt"></i><span>Reports</span>
+        </a>
+        <a href="{{ url_for('teacher.analytics') }}" class="nav-item {% if request.endpoint == 'teacher.analytics' %}active{% endif %}">
+            <i class="fas fa-chart-line"></i><span>Analytics</span>
+        </a>
+        <a href="{{ url_for('teacher.profile') }}" class="nav-item {% if request.endpoint == 'teacher.profile' %}active{% endif %}">
+            <i class="fas fa-user"></i><span>Profile</span>
+        </a>
+        {% elif role == 'student' %}
+        <a href="{{ url_for('student.dashboard') }}" class="nav-item {% if request.endpoint == 'student.dashboard' %}active{% endif %}">
+            <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
+        </a>
+        <a href="{{ url_for('student.attendance') }}" class="nav-item {% if request.endpoint == 'student.attendance' %}active{% endif %}">
+            <i class="fas fa-clipboard-list"></i><span>My Attendance</span>
+        </a>
+        <a href="{{ url_for('student.qr_scan') }}" class="nav-item {% if request.endpoint == 'student.qr_scan' %}active{% endif %}">
+            <i class="fas fa-qrcode"></i><span>Scan QR</span>
+        </a>
+        <a href="{{ url_for('student.profile') }}" class="nav-item {% if request.endpoint == 'student.profile' %}active{% endif %}">
+            <i class="fas fa-user"></i><span>Profile</span>
+        </a>
+        {% endif %}
+    </nav>
+    <div class="sidebar-footer">
+        <a href="{{ url_for('auth.logout') }}" class="nav-item logout-btn">
+            <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+        </a>
+    </div>
+</aside>

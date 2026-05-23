@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block title %}QR Sessions{% endblock %}
+{% block body %}
+<div class="app-layout">
+    {% include 'sidebar.html' %}
+    <main class="main-content">
+        <div class="page-header"><h1><i class="fas fa-qrcode"></i> QR Attendance Sessions</h1></div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}<div class="alert alert-{{ category }}">{{ message }}</div>{% endfor %}
+        {% endwith %}
+        <div class="dashboard-grid">
+            <div class="card">
+                <div class="card-header"><h3><i class="fas fa-plus-circle"></i> Generate QR Code</h3></div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('teacher.generate_qr') }}">
+                        <div class="form-group">
+                            <label>Select Subject</label>
+                            <select name="subject_id" class="form-input" required>
+                                <option value="">-- Select Subject --</option>
+                                {% for sub in subjects %}<option value="{{ sub.id }}">{{ sub.subject_name }} ({{ sub.subject_code }})</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>QR Duration (minutes)</label>
+                            <select name="duration" class="form-input">
+                                <option value="5">5 minutes</option>
+                                <option value="10">10 minutes</option>
+                                <option value="15">15 minutes</option>
+                                <option value="30">30 minutes</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-full"><i class="fas fa-qrcode"></i> Generate QR</button>
+                    </form>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h3><i class="fas fa-bolt"></i> Active QR Sessions</h3></div>
+                <div class="card-body">
+                    {% for session in active_sessions %}
+                    <div class="qr-session-card">
+                        <div class="qr-image-wrap">
+                            <img src="{{ url_for('static', filename='qr/' + session.session_id + '.png') }}" alt="QR Code" class="qr-img">
+                        </div>
+                        <div class="qr-session-info">
+                            <p><b>Subject:</b> {{ session.subject.subject_name }}</p>
+                            <p><b>Expires:</b> <span class="timer" data-expires="{{ session.expires_at.isoformat() }}">--:--</span></p>
+                            <p><b>Session ID:</b> <code>{{ session.session_id[:16] }}...</code></p>
+                            <form method="POST" action="{{ url_for('teacher.deactivate_qr', session_id=session.id) }}">
+                                <button class="btn btn-sm btn-danger"><i class="fas fa-stop"></i> Deactivate</button>
+                            </form>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="no-data-card"><i class="fas fa-qrcode fa-2x"></i><p>No active QR sessions.</p><p class="text-muted">Generate a QR code to start attendance.</p></div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header"><h3><i class="fas fa-info-circle"></i> How QR Attendance Works</h3></div>
+            <div class="card-body">
+                <div class="steps-grid">
+                    <div class="step"><span class="step-num">1</span><i class="fas fa-book"></i><p>Select subject & duration</p></div>
+                    <div class="step"><span class="step-num">2</span><i class="fas fa-qrcode"></i><p>Generate QR code</p></div>
+                    <div class="step"><span class="step-num">3</span><i class="fas fa-desktop"></i><p>Display on projector</p></div>
+                    <div class="step"><span class="step-num">4</span><i class="fas fa-mobile-alt"></i><p>Students scan QR</p></div>
+                    <div class="step"><span class="step-num">5</span><i class="fas fa-check-circle"></i><p>Attendance auto-recorded</p></div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<script>
+function updateTimers() {
+    document.querySelectorAll('.timer').forEach(el => {
+        const expires = new Date(el.dataset.expires + 'Z');
+        const diff = Math.max(0, Math.floor((expires - Date.now()) / 1000));
+        const m = Math.floor(diff / 60).toString().padStart(2, '0');
+        const s = (diff % 60).toString().padStart(2, '0');
+        el.textContent = `${m}:${s}`;
+        if (diff === 0) { el.textContent = 'EXPIRED'; el.style.color = '#ef4444'; }
+    });
+}
+updateTimers();
+setInterval(updateTimers, 1000);
+</script>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Profile{% endblock %}
+{% block body %}
+<div class="app-layout">
+    {% include 'sidebar.html' %}
+    <main class="main-content">
+        <div class="page-header"><h1><i class="fas fa-user"></i> Profile</h1></div>
+        <div class="profile-card">
+            <div class="profile-header">
+                <div class="profile-avatar"><i class="fas fa-user-tie"></i></div>
+                <div class="profile-meta">
+                    <h2>{{ current_user.name }}</h2>
+                    <span class="badge badge-teacher">Teacher</span>
+                </div>
+            </div>
+            <div class="profile-details">
+                <div class="detail-item"><i class="fas fa-envelope"></i><span>{{ current_user.email }}</span></div>
+                <div class="detail-item"><i class="fas fa-building"></i><span>{{ teacher.department }}</span></div>
+                <div class="detail-item"><i class="fas fa-calendar-plus"></i><span>Joined {{ current_user.created_at.strftime('%B %Y') }}</span></div>
+                <div class="detail-item"><i class="fas fa-id-badge"></i><span>Teacher ID: TCH-{{ teacher.id }}</span></div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

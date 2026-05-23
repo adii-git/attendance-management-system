@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}Teacher Dashboard{% endblock %}
+{% block body %}
+<div class="app-layout">
+    {% include 'sidebar.html' %}
+    <main class="main-content">
+        <div class="page-header">
+            <h1><i class="fas fa-tachometer-alt"></i> Teacher Dashboard</h1>
+            <span class="welcome-badge">Welcome, {{ current_user.name }}</span>
+        </div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}<div class="alert alert-{{ category }}">{{ message }}</div>{% endfor %}
+        {% endwith %}
+        <div class="stats-grid">
+            <div class="stat-card stat-blue">
+                <div class="stat-icon"><i class="fas fa-book"></i></div>
+                <div class="stat-info"><span class="stat-value">{{ subjects|length }}</span><span class="stat-label">My Subjects</span></div>
+            </div>
+            <div class="stat-card stat-green">
+                <div class="stat-icon"><i class="fas fa-user-graduate"></i></div>
+                <div class="stat-info"><span class="stat-value">{{ total_students }}</span><span class="stat-label">Total Students</span></div>
+            </div>
+            <div class="stat-card stat-purple">
+                <div class="stat-icon"><i class="fas fa-clipboard-check"></i></div>
+                <div class="stat-info"><span class="stat-value">{{ total_attendance }}</span><span class="stat-label">Records</span></div>
+            </div>
+            <div class="stat-card stat-orange">
+                <div class="stat-icon"><i class="fas fa-percent"></i></div>
+                <div class="stat-info"><span class="stat-value">{{ att_pct }}%</span><span class="stat-label">Attendance Rate</span></div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="card chart-card">
+                <div class="card-header"><h3><i class="fas fa-chart-line"></i> 7-Day Attendance Trend</h3></div>
+                <div class="card-body"><canvas id="attendanceChart" height="120"></canvas></div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-book"></i> My Subjects</h3>
+                    <a href="{{ url_for('teacher.create_subject') }}" class="btn btn-sm btn-primary"><i class="fas fa-plus"></i> Add</a>
+                </div>
+                <div class="card-body">
+                    {% for sub in subjects %}
+                    <div class="subject-chip"><i class="fas fa-circle-dot"></i> {{ sub.subject_name }} <span class="code">{{ sub.subject_code }}</span></div>
+                    {% else %}
+                    <p class="no-data">No subjects yet. <a href="{{ url_for('teacher.create_subject') }}">Create one</a>.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            <h3>Quick Actions</h3>
+            <div class="actions-grid">
+                <a href="{{ url_for('teacher.create_student') }}" class="action-card"><i class="fas fa-user-plus"></i><span>Add Student</span></a>
+                <a href="{{ url_for('teacher.attendance') }}" class="action-card"><i class="fas fa-clipboard-list"></i><span>Mark Attendance</span></a>
+                <a href="{{ url_for('teacher.qr_page') }}" class="action-card"><i class="fas fa-qrcode"></i><span>Generate QR</span></a>
+                <a href="{{ url_for('teacher.reports') }}" class="action-card"><i class="fas fa-file-alt"></i><span>View Reports</span></a>
+            </div>
+        </div>
+    </main>
+</div>
+<script>
+new Chart(document.getElementById('attendanceChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+        labels: {{ chart_labels|tojson }},
+        datasets: [
+            { label: 'Present', data: {{ chart_present|tojson }}, backgroundColor: 'rgba(34,197,94,0.8)', borderRadius: 4 },
+            { label: 'Absent', data: {{ chart_absent|tojson }}, backgroundColor: 'rgba(239,68,68,0.8)', borderRadius: 4 }
+        ]
+    },
+    options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { x: { stacked: false }, y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+});
+</script>
+{% endblock %}

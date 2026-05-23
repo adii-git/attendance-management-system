@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block title %}Scan QR{% endblock %}
+{% block extra_head %}
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+{% endblock %}
+{% block body %}
+<div class="app-layout">
+    {% include 'sidebar.html' %}
+    <main class="main-content">
+        <div class="page-header"><h1><i class="fas fa-qrcode"></i> Scan QR Code</h1></div>
+        <div class="qr-scan-layout">
+            <div class="card qr-scan-card">
+                <div class="card-header"><h3><i class="fas fa-camera"></i> Camera Scanner</h3></div>
+                <div class="card-body">
+                    <div id="reader" class="qr-reader"></div>
+                    <div class="scan-controls">
+                        <button id="startBtn" class="btn btn-primary" onclick="startScanner()"><i class="fas fa-play"></i> Start Scanner</button>
+                        <button id="stopBtn" class="btn btn-secondary" onclick="stopScanner()" style="display:none"><i class="fas fa-stop"></i> Stop</button>
+                    </div>
+                    <div id="scanResult" class="scan-result" style="display:none"></div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h3><i class="fas fa-info-circle"></i> Instructions</h3></div>
+                <div class="card-body">
+                    <div class="instructions">
+                        <div class="step"><span class="step-num">1</span><p>Click <b>Start Scanner</b> to activate your camera.</p></div>
+                        <div class="step"><span class="step-num">2</span><p>Allow camera permissions if prompted.</p></div>
+                        <div class="step"><span class="step-num">3</span><p>Point your camera at the QR code displayed by your teacher.</p></div>
+                        <div class="step"><span class="step-num">4</span><p>Hold steady — attendance is marked automatically.</p></div>
+                        <div class="step"><span class="step-num">5</span><p>You'll see a confirmation message when done.</p></div>
+                    </div>
+                    <div class="alert alert-info" style="margin-top:1rem"><i class="fas fa-shield-alt"></i> QR codes expire after a set time. Make sure you scan while the session is active.</div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<script>
+let html5QrCode = null;
+
+function startScanner() {
+    document.getElementById('startBtn').style.display = 'none';
+    document.getElementById('stopBtn').style.display = 'inline-flex';
+    html5QrCode = new Html5Qrcode("reader");
+    html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        onScanSuccess,
+        onScanFailure
+    ).catch(err => {
+        showResult('error', 'Camera error: ' + err);
+        document.getElementById('startBtn').style.display = 'inline-flex';
+        document.getElementById('stopBtn').style.display = 'none';
+    });
+}
+
+function stopScanner() {
+    if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+            document.getElementById('startBtn').style.display = 'inline-flex';
+            document.getElementById('stopBtn').style.display = 'none';
+        });
+    }
+}
+
+function onScanSuccess(decodedText) {
+    stopScanner();
+    showResult('info', '<i class="fas fa-spinner fa-spin"></i> Processing attendance...');
+    fetch('/student/qr/mark', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ qr_data: decodedText })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showResult('success', '<i class="fas fa-check-circle"></i> ' + data.message);
+        } else {
+            showResult('error', '<i class="fas fa-times-circle"></i> ' + data.message);
+            setTimeout(() => { document.getElementById('startBtn').style.display = 'inline-flex'; }, 2000);
+        }
+    })
+    .catch(() => showResult('error', 'Network error. Try again.'));
+}
+
+function onScanFailure() {}
+
+function showResult(type, msg) {
+    const el = document.getElementById('scanResult');
+    el.style.display = 'block';
+    el.className = 'scan-result result-' + type;
+    el.innerHTML = msg;
+}
+</script>
+{% endblock %}

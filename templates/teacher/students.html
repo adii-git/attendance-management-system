@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}Students{% endblock %}
+{% block body %}
+<div class="app-layout">
+    {% include 'sidebar.html' %}
+    <main class="main-content">
+        <div class="page-header">
+            <h1><i class="fas fa-user-graduate"></i> Students</h1>
+            <a href="{{ url_for('teacher.create_student') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Add Student</a>
+        </div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}<div class="alert alert-{{ category }}">{{ message }}</div>{% endfor %}
+        {% endwith %}
+        <div class="card">
+            <div class="card-body">
+                <div class="search-bar"><input type="text" id="searchInput" placeholder="Search students..." class="form-input" oninput="filterTable()"></div>
+                <table class="data-table" id="studentsTable">
+                    <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Roll No.</th><th>Department</th><th>Semester</th><th>Actions</th></tr></thead>
+                    <tbody>
+                    {% for user, student in students %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td><i class="fas fa-user-graduate text-green"></i> {{ user.name }}</td>
+                        <td>{{ user.email }}</td>
+                        <td><span class="badge badge-roll">{{ student.roll_number }}</span></td>
+                        <td>{{ student.department }}</td>
+                        <td>Sem {{ student.semester }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('teacher.delete_student', user_id=user.id) }}" onsubmit="return confirm('Delete student?')">
+                                <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="7" class="no-data">No students found.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+<script>
+function filterTable() {
+    const val = document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('#studentsTable tbody tr').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(val) ? '' : 'none';
+    });
+}
+</script>
+{% endblock %}

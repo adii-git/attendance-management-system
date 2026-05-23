@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Analytics{% endblock %}
+{% block body %}
+<div class="app-layout">
+    {% include 'sidebar.html' %}
+    <main class="main-content">
+        <div class="page-header"><h1><i class="fas fa-chart-bar"></i> Analytics</h1></div>
+        <div class="dashboard-grid">
+            <div class="card chart-card">
+                <div class="card-header"><h3>Subject-wise Attendance %</h3></div>
+                <div class="card-body"><canvas id="subjectChart" height="200"></canvas></div>
+            </div>
+            <div class="card chart-card">
+                <div class="card-header"><h3>Students by Department</h3></div>
+                <div class="card-body"><canvas id="deptChart" height="200"></canvas></div>
+            </div>
+        </div>
+    </main>
+</div>
+<script>
+new Chart(document.getElementById('subjectChart').getContext('2d'), {
+    type: 'bar',
+    data: { labels: {{ subject_labels|tojson }}, datasets: [{ label: 'Attendance %', data: {{ subject_pct|tojson }}, backgroundColor: 'rgba(99,102,241,0.8)', borderRadius: 6 }] },
+    options: { responsive: true, scales: { y: { beginAtZero: true, max: 100 } } }
+});
+new Chart(document.getElementById('deptChart').getContext('2d'), {
+    type: 'doughnut',
+    data: { labels: {{ dept_labels|tojson }}, datasets: [{ data: {{ dept_counts|tojson }}, backgroundColor: ['#6366f1','#22c55e','#f59e0b','#ef4444','#06b6d4'] }] },
+    options: { responsive: true }
+});
+</script>
+{% endblock %}

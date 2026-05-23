@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Analytics{% endblock %}
+{% block body %}
+<div class="app-layout">
+    {% include 'sidebar.html' %}
+    <main class="main-content">
+        <div class="page-header"><h1><i class="fas fa-chart-line"></i> Analytics</h1></div>
+        <div class="dashboard-grid">
+            <div class="card chart-card">
+                <div class="card-header"><h3>Subject-wise Attendance %</h3></div>
+                <div class="card-body"><canvas id="barChart" height="200"></canvas></div>
+            </div>
+            <div class="card chart-card">
+                <div class="card-header"><h3>Attendance Distribution</h3></div>
+                <div class="card-body"><canvas id="pieChart" height="200"></canvas></div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header"><h3>Subject Summary</h3></div>
+            <div class="card-body">
+                <table class="data-table">
+                    <thead><tr><th>Subject</th><th>Code</th><th>Attendance %</th><th>Progress</th></tr></thead>
+                    <tbody>
+                    {% for sub in subjects %}
+                    {% set idx = loop.index0 %}
+                    <tr>
+                        <td>{{ sub.subject_name }}</td>
+                        <td>{{ sub.subject_code }}</td>
+                        <td>{{ subject_pct[idx] }}%</td>
+                        <td>
+                            <div class="progress-bar-full">
+                                <div class="progress-fill {% if subject_pct[idx] >= 75 %}fill-green{% elif subject_pct[idx] >= 50 %}fill-yellow{% else %}fill-red{% endif %}" style="width:{{ subject_pct[idx] }}%"></div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="4" class="no-data">No subjects yet.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+<script>
+new Chart(document.getElementById('barChart').getContext('2d'), {
+    type: 'bar',
+    data: { labels: {{ subject_labels|tojson }}, datasets: [{ label: 'Attendance %', data: {{ subject_pct|tojson }}, backgroundColor: ['#6366f1','#22c55e','#f59e0b','#ef4444','#06b6d4','#8b5cf6'], borderRadius: 6 }] },
+    options: { responsive: true, scales: { y: { beginAtZero: true, max: 100 } } }
+});
+new Chart(document.getElementById('pieChart').getContext('2d'), {
+    type: 'doughnut',
+    data: { labels: {{ subject_labels|tojson }}, datasets: [{ data: {{ subject_pct|tojson }}, backgroundColor: ['#6366f1','#22c55e','#f59e0b','#ef4444','#06b6d4'] }] },
+    options: { responsive: true }
+});
+</script>
+{% endblock %}
